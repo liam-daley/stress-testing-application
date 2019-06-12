@@ -25,19 +25,21 @@ def in_redis(number):
 def store_number_in_redis(number):
     retry(lambda: cache.hset("prime_numbers", number, number))
 
+# Python Central (2019).
 # Check if number is prime
 def is_prime_number(number):
-    #sys.maxint
     if in_redis(number):
        return True
+    if number == 2 or number == 3: # check the first two manually
+        store_number_in_redis(number)
+        return True
     if number > 1:
         for i in range(2,number):
             if (number % i) == 0:
-                return False;
                 break
             else:
                 store_number_in_redis(number)
-                return True;
+                return True
     else:
         return False
     
@@ -45,13 +47,14 @@ def is_prime_number(number):
 # Check if number is prime and return appropriate message
 @app.route('/isPrime/<number>')
 def check_number(number):
-    #try:
-    number = int(number)
-    if is_prime_number(number):
-        return "%d is prime" % number
-    return "%d is not prime" % number
-    #except:
-        #pass
+    try:
+        number = int(number)
+        if is_prime_number(number):
+            return "%d is prime" % number
+        return "%d is not prime" % number
+    except ValueError:
+        pass
+    return "%s is not prime" % number
 
 # Returns a list with all the primes stored in the connected Redis service
 @app.route('/primesStored')
